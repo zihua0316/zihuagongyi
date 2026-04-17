@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>子画公益 · 用户端</title>
+  <style>
+    /* ========== 基础样式（与原用户端完全一致） ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    .cute-panel {
+      width: 360px;
+      height: 370px;
+      background: #ffd9e8 url('https://s41.ax1x.com/2026/03/04/pe93BKU.jpg') center/cover;
+      border-radius: 35px;
+      overflow: hidden;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 3px 8px rgba(245, 120, 160, 0.1);
+      display: flex;
+      flex-direction: column;
+      border: none;
+      position: relative;
+    }
+    
+    /* 气泡动画 */
+    .bubble {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 220, 235, 0.4) 0%, rgba(255, 180, 210, 0.15) 100%);
+      box-shadow: 0 0 15px rgba(255, 136, 176, 0.6);
+      border-radius: 45%;
+      z-index: 0;
+      animation: floatFall linear infinite;
+      pointer-events: none;
+      opacity: 0;
+    }
+    
+    @keyframes floatFall {
+      0% { transform: translateY(-50px) scale(0.3); opacity: 0; }
+      10% { opacity: 0.9; }
+      85% { transform: translateY(300px) scale(0.9); opacity: 0.8; }
+      100% { transform: translateY(380px) scale(0.7); opacity: 0; }
+    }
+    
+    .cute-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 20;
+    }
+    
+    /* 头部按钮组 */
+    .header-btns {
+      position: absolute;
+      top: 8px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 14px;
+      z-index: 9999;
+      gap: 8px;
+    }
+    
+    .header-btn {
+      background: rgba(255, 136, 176, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 10px;
+      padding: 3px 7px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    
+    /* 下拉菜单 */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: #ffd9e8;
+      min-width: 100px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      z-index: 10000;
+      top: 22px;
+      left: 0;
+      backdrop-filter: blur(4px);
+      border: 1px solid #ff88b0;
+    }
+    
+    .dropdown-content a {
+      color: #c43e6e;
+      padding: 6px 12px;
+      text-decoration: none;
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    
+    .dropdown-content a:hover {
+      background: #ff88b0;
+      color: white;
+    }
+    
+    .dropdown.open .dropdown-content {
+      display: block;
+    }
+    
+    /* 头像区域 */
+    .header-area {
+      position: relative;
+      z-index: 10;
+      padding: 2px 0;
+      margin-top: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .top-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #ff88b0;
+      margin-bottom: 3px;
+    }
+    
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #c43e6e;
+      text-shadow: 0 2px 6px #ffeef4;
+    }
+    
+    .panel-title::before,
+    .panel-title::after {
+      content: '🐱';
+      font-size: 15px;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      padding: 0 10px 8px 10px;
+      gap: 8px;
+      min-height: 0;
+    }
+    
+    .func-slot {
+      width: 90px;
+      background: transparent;
+      border-radius: 16px;
+      padding: 10px 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .slot-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      color: #c43e6e;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: 0.2s;
+      padding: 9.5px 0;
+    }
+    
+    .slot-card.active,
+    .slot-card:hover {
+      background: rgba(255, 136, 176, 0.5);
+      color: #fff;
+    }
+    
+    .panel-inner {
+      flex: 1;
+      width: 0;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 6px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    
+    .func-content {
+      height: 100%;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    
+    .func-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 6px;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    /* 粉色小滑块样式 */
+    .pink-slider {
+      -webkit-appearance: none;
+      width: 90px;
+      height: 3px;
+      background: rgba(255, 136, 176, 0.5);
+      border-radius: 3px;
+      outline: none;
+      margin: 0 8px;
+    }
+    .pink-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff88b0;
+      border: 1px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .pink-slider::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+    }
+    
+    .func-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    
+    .func-title {
+      font-size: 15px;
+      color: #b13e69;
+      font-weight: 550;
+    }
+    
+    .paw {
+      color: #ff88b0;
+      font-size: 12px;
+    }
+    
+    /* 开关样式 */
+    .switch {
+      --size: 1.15em;
+      font-size: 11px;
+      position: relative;
+      display: inline-block;
+      width: 3.2em;
+      height: 2em;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 190, 210, 0.4);
+      border: 1px solid rgba(255, 136, 176, 0.3);
+      border-radius: 999px;
+      transition: 0.3s;
+    }
+    
+    .knob {
+      position: absolute;
+      height: var(--size);
+      width: var(--size);
+      left: 0.3em;
+      bottom: 0.4em;
+      transition: transform 0.4s cubic-bezier(0.34, 1.3, 0.6, 1);
+      transform-style: preserve-3d;
+    }
+    
+    .knob-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      backface-visibility: hidden;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      border: 1px solid #fff;
+    }
+    
+    .knob-front {
+      background: linear-gradient(145deg, #ffd9e8, #ff88b0);
+      color: #fff;
+    }
+    
+    .knob-back {
+      background: linear-gradient(145deg, #ff88b0, #c43e6e);
+      color: #ffe0f0;
+      transform: rotateY(180deg);
+    }
+    
+    input:checked~.knob {
+      transform: translateX(1.4em) rotateY(180deg);
+    }
+    
+    input:checked~.slider {
+      background: #ff88b0;
+      box-shadow: 0 0 8px rgba(255, 136, 176, 0.5);
+    }
+    
+    .content-item {
+      display: none;
+      height: 100%;
+    }
+    
+    .content-item.active {
+      display: block;
+    }
+    
+    .resize-handle {
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      width: 20px;
+      height: 20px;
+      border-right: 3px solid #c43e6e;
+      border-bottom: 3px solid #c43e6e;
+      border-radius: 0 0 10px 0;
+      cursor: default;
+      z-index: 9999;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ff88b0;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      z-index: 99999;
+      opacity: 0;
+      animation: toast 2s forwards;
+    }
+    
+    @keyframes toast {
+      0% { opacity: 0; transform: translate(-50%, -60%); }
+      20% { opacity: 1; transform: translate(-50%, -50%); }
+      80% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -40%); }
+    }
+    
+    .confirm-layer {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999;
+      border-radius: 35px;
+    }
+    
+    .confirm-box {
+      width: 240px;
+      background: #ffd9e8;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #ff88b0;
+    }
+    
+    .confirm-text {
+      font-size: 14px;
+      color: #c43e6e;
+      margin-bottom: 20px;
+    }
+    
+    .confirm-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    
+    .confirm-yes,
+    .confirm-no {
+      flex: 1;
+      padding: 8px 0;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      background: #ff88b0;
+      color: #fff;
+      border: none;
+    }
+    
+    /* 登录层 */
+    .auth-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://s41.ax1x.com/2026/03/04/pe93BKU.jpg') center/cover;
+      backdrop-filter: blur(4px);
+      z-index: 9999999;
+      border-radius: 35px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      pointer-events: auto;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 6px;
+    }
+    
+    .auth-tab {
+      font-size: 18px;
+      font-weight: 800;
+      color: #c43e6e;
+      padding: 4px 16px;
+      border-radius: 40px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    
+    .auth-tab.active {
+      background: #ff88b0;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(255, 136, 176, 0.4);
+    }
+    
+    .auth-form {
+      width: 85%;
+      max-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .auth-input {
+      padding: 8px 14px;
+      border: 2px solid rgba(255, 136, 176, 0.8);
+      border-radius: 60px;
+      outline: none;
+      font-size: 13px;
+      color: #c43e6e;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .auth-btn {
+      padding: 8px 0;
+      border: none;
+      border-radius: 60px;
+      background: #ff88b0;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 12px rgba(255, 136, 176, 0.3);
+    }
+    
+    .auth-tip {
+      font-size: 10px;
+      color: #b66b8a;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 3px 8px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+    }
+    
+    .user-info-bar {
+      background: rgba(255, 136, 176, 0.2);
+      margin: 4px 12px 0;
+      border-radius: 20px;
+      padding: 4px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .user-qq-badge {
+      background: rgba(255, 136, 176, 0.6);
+      border-radius: 30px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+    }
+    
+    .expire-badge {
+      background: rgba(255, 136, 176, 0.6);
+      border-radius: 30px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+      font-family: monospace;
+      white-space: nowrap;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #fff;
+      border-top-color: #c43e6e;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .tips-toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 235, 240, 0.98);
+      border-radius: 20px;
+      padding: 12px;
+      z-index: 999999;
+      width: 250px;
+      max-height: 360px;
+      overflow-y: auto;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+      border: 1px solid #ffc0d0;
+    }
+    
+    .tips-title {
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #c43e6e;
+    }
+    
+    .tips-content {
+      line-height: 2;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #b13e69;
+    }
+    
+    .tips-content p {
+      margin-bottom: 4px;
+    }
+    
+    .tips-btn {
+      width: 100%;
+      padding: 6px 0;
+      border: none;
+      border-radius: 40px;
+      background: #ff88b0;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    /* 皮肤模块 */
+    .skin-page {
+      display: none;
+      height: 100%;
+    }
+    
+    .skin-page.active {
+      display: block;
+    }
+    
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      width: 100%;
+    }
+    
+    .role-btn {
+      width: 100%;
+      padding: 9px 0;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 136, 176, 0.1);
+      background: rgba(255, 136, 176, 0.1);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .part-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+    
+    .part-btn {
+      width: 100%;
+      padding: 21px 0;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 136, 176, 0.1);
+      background: rgba(255, 136, 176, 0.1);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .skin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      width: 100%;
+    }
+    
+    .skin-btn {
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 136, 176, 0.1);
+      background: rgba(255, 136, 176, 0.1);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .restore-skin-btn {
+      width: 100%;
+      padding: 6px 0;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 136, 176, 0.4);
+      background: rgba(255, 136, 176, 0.6);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      grid-column: span 2;
+    }
+    
+    .main-btn {
+      width: 100%;
+      padding: 43px 0;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 136, 176, 0.1);
+      background: rgba(255, 136, 176, 0.1);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      height: 22px;
+    }
+    
+    .title-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(255, 136, 176, 0.3);
+      border-radius: 8px;
+      padding: 2px 8px;
+      display: inline-block;
+    }
+    
+    .small-back-btn {
+      padding: 3px 6px;
+      font-size: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 136, 176, 0.4);
+      background: rgba(255, 136, 176, 0.3);
+      color: #fff;
+      cursor: pointer;
+    }
+    
+    /* 音乐播放器 */
+    .music-player {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      color: #c43e6e;
+      padding-top: 4px;
+    }
+    
+    .playlist-fold-bar {
+      width: 90%;
+      height: 28px;
+      background: rgba(255, 136, 176, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid rgba(255, 136, 176, 0.3);
+      position: relative;
+    }
+    
+    .fold-arrow {
+      position: absolute;
+      right: 12px;
+      transition: transform 0.3s;
+      font-size: 11px;
+    }
+    
+    .fold-arrow.open {
+      transform: rotate(180deg);
+    }
+    
+    .playlist-container {
+      width: 90%;
+      max-height: 0;
+      overflow: hidden;
+      overflow-y: auto;
+      transition: max-height 0.4s ease;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+    }
+    
+    .playlist-container.open {
+      max-height: 160px;
+      padding: 6px;
+    }
+    
+    .playlist-item {
+      padding: 5px 8px;
+      font-size: 11px;
+      color: #b13e69;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .playlist-item:hover,
+    .playlist-item.active {
+      background: rgba(255, 136, 176, 0.5);
+      color: #fff;
+    }
+    
+    .pink-audio {
+      width: 90%;
+      height: 34px;
+      border-radius: 17px;
+      background: #ffd9e8;
+      border: 1px solid #ff88b0;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .audio-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #ff88b0;
+      color: #fff;
+      border: none;
+      font-size: 11px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    
+    .audio-progress {
+      flex: 1;
+      height: 4px;
+      appearance: none;
+      background: rgba(255, 136, 176, 0.3);
+      border-radius: 3px;
+    }
+    
+    .audio-progress::-webkit-slider-thumb {
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #ff88b0;
+    }
+    
+    .paw-small {
+      color: #ff88b0;
+      font-size: 9px;
+    }
+    
+    .player-controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+    }
+    
+    .control-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffd9e8;
+      border: 1px solid #ff88b0;
+      color: #c43e6e;
+      font-size: 16px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    
+    .song-title {
+      font-size: 13px;
+      color: #b13e69;
+      max-width: 90%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+      height: 18px;
+      font-weight: 600;
+    }
+    
+    .auth-loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      border-radius: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000001;
+    }
+    
+    .auth-loading-box {
+      background: rgba(255, 217, 232, 0.95);
+      border-radius: 60px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid #ff88b0;
+    }
+    
+    .auth-loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ff88b0;
+      border-top-color: #c43e6e;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    
+    .auth-loading-text {
+      color: #c43e6e;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="cute-panel" id="panel">
+    <!-- 登录层 -->
+    <div class="auth-layer" id="authLayer">
+      <div style="position: absolute; top: 12px; left: 14px;">
+        <div class="dropdown" id="groupDropdownLogin">
+          <button class="header-btn" id="groupBtnLogin">🐾 加QQ群组 🐾</button>
+          <div class="dropdown-content">
+            <a href="javascript:void(0)" onclick="window.location.href='mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1092498120&card_type=group&source=qrcode'">QQ群组①</a>
+          </div>
+        </div>
+      </div>
+      <div style="position: absolute; top: 12px; right: 14px;">
+        <div class="dropdown" id="adminDropdownLogin">
+          <button class="header-btn" id="adminBtnLogin">🐾 联系管理员 🐾</button>
+          <div class="dropdown-content">
+            <a href="javascript:void(0)" data-qq="2429634256" data-name="管理员①">管理员① 2429634256</a>
+            <a href="javascript:void(0)" data-qq="2607979215" data-name="管理员②">管理员② 2607979215</a>
+          </div>
+        </div>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">登录</div>
+        <div class="auth-tab" data-tab="register">注册</div>
+      </div>
+      <div id="loginForm" class="auth-form">
+        <input type="text" id="loginQq" class="auth-input" placeholder="QQ号" maxlength="15">
+        <input type="password" id="loginPwd" class="auth-input" placeholder="密码">
+        <button class="auth-btn" id="doLoginBtn">登录</button>
+        <div class="auth-tip">🐾 子画公益永久免费——杜绝倒卖从你我做起 🐾</div>
+      </div>
+      <div id="registerForm" class="auth-form" style="display:none;">
+        <input type="text" id="regQq" class="auth-input" placeholder="QQ号（输入和群里的一样否则不予审核）" maxlength="15">
+        <input type="password" id="regPwd" class="auth-input" placeholder="密码（随便输你能记得住的）">
+        <button class="auth-btn" id="doRegisterBtn">提交注册</button>
+        <div class="auth-tip">提交后联系管理员审核，审核通过即可登录</div>
+      </div>
+    </div>
+    <!-- 主界面头部按钮 -->
+    <div class="header-btns" id="mainHeaderBtns" style="display: none;">
+      <button class="header-btn" id="tipsBtn">🐾 温馨提示 🐾</button>
+      <div class="dropdown" id="adminDropdownMain">
+        <button class="header-btn" id="adminBtnMain">🐾 联系管理员 🐾</button>
+        <div class="dropdown-content">
+          <a href="javascript:void(0)" data-qq="2429634256" data-name="管理员①">管理员① 2429634256</a>
+          <a href="javascript:void(0)" data-qq="2607979215" data-name="管理员②">管理员② 2607979215</a>
+        </div>
+      </div>
+    </div>
+    <div class="header-area">
+      <div class="top-avatar" style="background-image:url('https://s41.ax1x.com/2026/03/04/pe93BKU.jpg')"></div>
+      <div class="panel-title">子画公益</div>
+    </div>
+    <div id="userInfoBar" class="user-info-bar" style="display: none;">
+      <span class="user-qq-badge" id="userQqSpan">QQ:--</span>
+      <span class="expire-badge" id="expireSpan">剩余时间:--</span>
+    </div>
+    <div class="main-content" id="mainContentWrapper" style="display: none;">
+      <div class="func-slot">
+        <div class="slot-card active" data-target="content1">功能</div>
+        <div class="slot-card" data-target="content2">绘制</div>
+        <div class="slot-card" data-target="content6">加特林</div>
+        <div class="slot-card" data-target="content4">武器无后摇</div>
+        <div class="slot-card" data-target="content3">白嫖换皮肤</div>
+        <div class="slot-card" data-target="content5">播放音乐</div>
+      </div>
+      <div class="panel-inner">
+        <div class="func-content">
+          <div class="content-item active" id="content1">
+            <!-- 防闪开关 -->
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">防闪</span></div>
+              <label class="switch"><input type="checkbox" id="antiCrashSwitch"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <!-- 夜视卡片：带滑块 -->
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">夜视</span></div>
+              <input type="range" id="nightSlider" class="pink-slider" min="1" max="10" step="1" value="5">
+              <label class="switch"><input type="checkbox" id="nightToggle"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <!-- 广角卡片：带滑块 -->
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">广角</span></div>
+              <input type="range" id="wideSlider" class="pink-slider" min="10" max="120" step="1" value="80">
+              <label class="switch"><input type="checkbox" id="wideToggle"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <!-- 除雾卡片：替换为单个开关 -->
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">除雾</span></div>
+              <label class="switch"><input type="checkbox" id="fogToggle"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">显棺</span></div><label class="switch"><input type="checkbox" id="boxBtn"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">除磁</span></div><label class="switch"><input type="checkbox" id="magBtn"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+          </div>
+          <div class="content-item" id="content2">
+            <div class="func-title nofunc" style="color:#e89bbf; text-align:center; padding-top:30px;">功能研发中</div>
+          </div>
+          <div class="content-item" id="content6">
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">枪械无后坐</span></div><label class="switch"><input type="checkbox" id="shortGunToggle"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+          </div>
+          <div class="content-item" id="content4">
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">伞</span></div><label class="switch"><input type="checkbox" class="weapon-switch" data-weapon="san"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">长枪</span></div><label class="switch"><input type="checkbox" class="weapon-switch" data-weapon="changqiang"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">扇子</span></div><label class="switch"><input type="checkbox" class="weapon-switch" data-weapon="shanzi"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">鞭子</span></div><label class="switch"><input type="checkbox" class="weapon-switch" data-weapon="bianzi"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+            <div class="func-card">
+              <div class="func-title-wrap"><span class="paw">🐾</span><span class="func-title">桃木剑</span></div><label class="switch"><input type="checkbox" class="weapon-switch" data-weapon="taomu"><span class="slider"></span><span class="knob"><span class="knob-face knob-front">🐾</span><span class="knob-face knob-back">🐾</span></span></label>
+            </div>
+          </div>
+          <div class="content-item" id="content3">
+            <div class="skin-page active" id="skin-main"><button class="main-btn" onclick="goSkinPage('katou-role')">🐾 卡头 🐾</button><button class="main-btn" onclick="goSkinPage('huanpi-role')">🐾 换皮 🐾</button></div>
+            <div class="skin-page" id="katou-role">
+              <div class="top-bar">
+                <div class="title-text">🐾请选择角色🐾</div><button class="small-back-btn" onclick="goSkinPage('skin-main')">🐾返回🐾</button>
+              </div>
+              <div class="role-grid" id="katouRoleGrid"></div>
+            </div>
+            <div class="skin-page" id="katou-part">
+              <div class="top-bar">
+                <div class="title-text" id="partRoleTitle">角色名</div><button class="small-back-btn" onclick="goSkinPage('katou-role')">🐾返回🐾</button>
+              </div>
+              <div class="part-bar"><button class="part-btn" onclick="goPart('头')">头部</button><button class="part-btn" onclick="goPart('脸')">脸部</button><button class="part-btn" onclick="goPart('衣')">身体</button></div>
+            </div>
+            <div class="skin-page" id="head-skin">
+              <div class="top-bar">
+                <div class="title-text" id="headTitle">头部</div><button class="small-back-btn" onclick="goSkinPage('katou-part')">🐾返回🐾</button>
+              </div>
+              <div class="skin-grid" id="headList"></div>
+            </div>
+            <div class="skin-page" id="face-skin">
+              <div class="top-bar">
+                <div class="title-text" id="faceTitle">脸部</div><button class="small-back-btn" onclick="goSkinPage('katou-part')">🐾返回🐾</button>
+              </div>
+              <div class="skin-grid" id="faceList"></div>
+            </div>
+            <div class="skin-page" id="body-skin">
+              <div class="top-bar">
+                <div class="title-text" id="bodyTitle">身体</div><button class="small-back-btn" onclick="goSkinPage('katou-part')">🐾返回🐾</button>
+              </div>
+              <div class="skin-grid" id="bodyList"></div>
+            </div>
+            <div class="skin-page" id="huanpi-role">
+              <div class="top-bar">
+                <div class="title-text">🐾请选择角色🐾</div><button class="small-back-btn" onclick="goSkinPage('skin-main')">🐾返回🐾</button>
+              </div>
+              <div class="role-grid" id="huanpiRoleGrid"></div>
+            </div>
+            <div class="skin-page" id="huanpi-skin">
+              <div class="top-bar">
+                <div class="title-text" id="hpTitle">角色名</div><button class="small-back-btn" onclick="goSkinPage('huanpi-role')">🐾返回🐾</button>
+              </div>
+              <div class="skin-grid" id="hpList"></div>
+            </div>
+          </div>
+          <div class="content-item" id="content5">
+            <div class="music-player">
+              <div class="playlist-fold-bar" id="foldBar"><span>歌曲列表</span><span class="fold-arrow">▼</span></div>
+              <div class="playlist-container" id="playlistContainer"></div>
+              <div class="song-title" id="songTitle">点击歌曲播放</div>
+              <div class="pink-audio"><button class="audio-btn" id="playPauseBtn">▶</button><span class="paw-small">🐾</span><input type="range" class="audio-progress" id="progressBar" min="0" max="100" value="0"></div>
+              <div class="player-controls"><button class="control-btn" id="prevBtn">⏮️</button><button class="control-btn" id="repeatBtn">🔁</button><button class="control-btn" id="nextBtn">⏭️</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+    <div class="confirm-layer" id="confirmLayer">
+      <div class="confirm-box">
+        <div class="confirm-text" id="confirmText">提示</div>
+        <div class="confirm-btns"><button class="confirm-yes" id="confirmYes">是</button><button class="confirm-no" id="confirmNo">否</button></div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // ========== 双 Bin 配置 ==========
+    // 主 Bin（存用户数据）- 用户端只读
+    const MAIN_BIN_ID = "69df8413aaba882197006c91";
+    // 申请 Bin（存注册申请）- 用户端可写
+    const APP_BIN_ID = "69df8462856a682189383090";
+    // Access Key（只有 CREATE + READ 权限，没有 DELETE/UPDATE）
+    const ACCESS_KEY = "$2a$10$oCG/T5dVtP2cpVkb59s3j.rfu5YamDHQv8reuyk472KfkOhTWbgWq";
+    
+    let currentUser = null;
+    let expireInterval = null;
+    
+    function getDeviceId() {
+      let id = localStorage.getItem('device_id');
+      if (!id) {
+        id = 'device_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
+        localStorage.setItem('device_id', id);
+      }
+      return id;
+    }
+    
+    function showToast(msg) {
+      let t = document.createElement('div');
+      t.className = 'toast';
+      t.innerText = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2000);
+    }
+    
+    function copyText(text) {
+      let i = document.createElement('input');
+      i.value = text;
+      document.body.appendChild(i);
+      i.select();
+      document.execCommand('copy');
+      document.body.removeChild(i);
+    }
+    
+    // ========== 从主 Bin 读取用户数据（只读，使用 Access Key 的 READ 权限） ==========
+    async function fetchUsersFromCloud() {
+      try {
+        const url = `https://api.jsonbin.io/v3/b/${MAIN_BIN_ID}/latest?nocache=${Date.now()}`;
+        const res = await fetch(url, {
+          headers: { "X-Access-Key": ACCESS_KEY }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return data.record?.users || [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+    
+    // ========== 提交注册申请（写入申请 Bin） ==========
+    async function submitApplication(qq, pwd) {
+      try {
+        // 1. 先检查主 Bin 是否已存在该用户
+        const users = await fetchUsersFromCloud();
+        if (users.find(u => u.qq === qq)) {
+          return { ok: false, msg: '该QQ号已注册' };
+        }
+        
+        // 2. 读取申请 Bin 现有申请
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${APP_BIN_ID}/latest`, {
+          headers: { "X-Access-Key": ACCESS_KEY }
+        });
+        const data = await res.json();
+        let applications = data.record?.applications || [];
+        
+        // 3. 检查是否已有待审核申请
+        if (applications.find(a => a.qq === qq && a.status === 'pending')) {
+          return { ok: false, msg: '已有待审核的申请，请联系管理员审核' };
+        }
+        
+        // 4. 添加新申请
+        applications.push({
+          qq: qq,
+          pwd: pwd,
+          status: 'pending',
+          applyTime: Date.now(),
+          deviceId: getDeviceId()
+        });
+        
+        // 5. 保存申请
+        await fetch(`https://api.jsonbin.io/v3/b/${APP_BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            "X-Access-Key": ACCESS_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ applications: applications })
+        });
+        
+        return { ok: true, msg: '申请已提交，请联系管理员审核' };
+      } catch(e) {
+        console.error(e);
+        return { ok: false, msg: '提交失败：' + e.message };
+      }
+    }
+    
+    // ========== 登录验证（只读主 Bin，不写入） ==========
+    async function login(qq, pwd) {
+      let users = await fetchUsersFromCloud();
+      let user = users.find(u => u.qq === qq);
+      
+      if (!user) return { ok: false, msg: 'QQ号不存在，请先注册' };
+      if (user.pwd !== pwd) return { ok: false, msg: '密码错误' };
+      if (user.status === 'pending') return { ok: false, msg: '账号待审核，请联系管理员' };
+      if (user.status === 'disabled') return { ok: false, msg: '账号已被禁用' };
+      if (user.status === 'active' && user.expireTs && Date.now() > user.expireTs) {
+        return { ok: false, msg: '使用期限已过期，请联系管理员续期' };
+      }
+      
+      const devId = getDeviceId();
+      // 注意：设备绑定验证从云端读取，但用户端没有写入权限
+      // 所以首次登录时如果设备未绑定，需要联系管理员绑定
+      if (user.bindDevice && user.bindDevice !== devId) {
+        return { ok: false, msg: '该账号已绑定其他设备，禁止多设备登录' };
+      }
+      
+      // 如果用户没有绑定设备，提示联系管理员绑定（用户端无法自动绑定）
+      if (!user.bindDevice) {
+        return { ok: false, msg: '请使用管理端先绑定您的设备ID: ' + devId.substr(0, 16) + '...\n联系管理员操作' };
+      }
+      
+      return { ok: true, user: user };
+    }
+    
+    function formatRemaining(expireTs) {
+      if (!expireTs) return '未设置';
+      if (expireTs === 8640000000000000) return '永久有效';
+      let remain = expireTs - Date.now();
+      if (remain <= 0) return '已过期';
+      let days = Math.floor(remain / 86400000);
+      let hours = Math.floor((remain % 86400000) / 3600000);
+      let minutes = Math.floor((remain % 3600000) / 60000);
+      let seconds = Math.floor((remain % 60000) / 1000);
+      return `${days}天 ${hours}时 ${minutes}分 ${seconds}秒`;
+    }
+    
+    function startExpireTimer() {
+      if (expireInterval) clearInterval(expireInterval);
+      const update = () => {
+        if (currentUser && currentUser.expireTs) {
+          const remainText = formatRemaining(currentUser.expireTs);
+          document.getElementById('expireSpan').innerText = `⏱️ ${remainText}`;
+          if (remainText === '已过期') {
+            showToast('使用已过期，请重新登录');
+            logout();
+          }
+        }
+      };
+      update();
+      expireInterval = setInterval(update, 1000);
+    }
+    
+    function onLoginSuccess(user) {
+      currentUser = user;
+      localStorage.setItem('zihua_auth_qq', user.qq);
+      document.getElementById('authLayer').style.display = 'none';
+      document.getElementById('mainHeaderBtns').style.display = 'flex';
+      document.getElementById('mainContentWrapper').style.display = 'flex';
+      document.getElementById('userInfoBar').style.display = 'flex';
+      document.getElementById('userQqSpan').innerHTML = `🐧 ${user.qq}`;
+      startExpireTimer();
+      showTipsToast();
+      setupAdminCopy();
+    }
+    
+    function logout() {
+      if (expireInterval) clearInterval(expireInterval);
+      localStorage.removeItem('zihua_auth_qq');
+      currentUser = null;
+      document.getElementById('authLayer').style.display = 'flex';
+      document.getElementById('mainHeaderBtns').style.display = 'none';
+      document.getElementById('mainContentWrapper').style.display = 'none';
+      document.getElementById('userInfoBar').style.display = 'none';
+    }
+    
+    async function checkAutoLogin() {
+      let savedQq = localStorage.getItem('zihua_auth_qq');
+      if (!savedQq) return false;
+      const authLayer = document.getElementById('authLayer');
+      authLayer.style.display = 'flex';
+      let loadingDiv = document.createElement('div');
+      loadingDiv.className = 'auth-loading-overlay';
+      loadingDiv.innerHTML = `<div class="auth-loading-box"><div class="auth-loading-spinner"></div><div class="auth-loading-text">正在登录中……请稍后</div></div>`;
+      authLayer.appendChild(loadingDiv);
+      let users = await fetchUsersFromCloud();
+      let user = users.find(u => u.qq === savedQq);
+      if (!user || user.status !== 'active' || (user.expireTs && Date.now() > user.expireTs)) { loadingDiv.remove(); return false; }
+      let devId = getDeviceId();
+      if (user.bindDevice && user.bindDevice !== devId) { loadingDiv.remove(); return false; }
+      if (!user.bindDevice) { loadingDiv.remove(); return false; }
+      currentUser = user;
+      loadingDiv.remove();
+      onLoginSuccess(user);
+      return true;
+    }
+    
+    function showTipsToast() {
+      let oldTip = document.querySelector('.tips-toast');
+      if (oldTip) oldTip.remove();
+      let tipDiv = document.createElement('div');
+      tipDiv.className = 'tips-toast';
+      tipDiv.innerHTML = `<div class="tips-title">🐾温馨提示🐾</div><div class="tips-content"><p>1. 🐾开启所需的功能后，打开防闪功能，然后断网重连即可实现龙宫不闪退</p><p>2. 🐾除雾打开没有效果就断网重连一下即可</p><p>3. 🐾武器无后摇开启前需要用对应武器攻击两下再开启，如开启没效果就关掉重新攻击两下再开启（桃木剑不可用）</p><p>4. 🐾同一角色换不同皮肤都需要恢复原皮再换</p><p>5. 🐾需要定制自己喜欢的样式和播放器里的歌曲可以点击右上角联系作者</p></div><button class="tips-btn" id="closeTipsBtn">🐾我晓得啦🐾</button>`;
+      document.body.appendChild(tipDiv);
+      document.getElementById('closeTipsBtn').onclick = () => tipDiv.remove();
+    }
+    
+    // 下拉菜单
+    function setupDropdowns() {
+      const dropdowns = [
+        { btn: document.getElementById('adminBtnLogin'), container: document.getElementById('adminDropdownLogin') },
+        { btn: document.getElementById('adminBtnMain'), container: document.getElementById('adminDropdownMain') },
+        { btn: document.getElementById('groupBtnLogin'), container: document.getElementById('groupDropdownLogin') }
+      ];
+      dropdowns.forEach(({ btn, container }) => {
+        if (!btn || !container) return;
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          container.classList.toggle('open');
+        };
+        document.addEventListener('click', function closeAll(e) {
+          if (!container.contains(e.target)) {
+            container.classList.remove('open');
+          }
+        });
+      });
+    }
+    
+    function setupAdminCopy() {
+      const adminDropdowns = [document.getElementById('adminDropdownLogin'), document.getElementById('adminDropdownMain')];
+      adminDropdowns.forEach(dropdown => {
+        if (!dropdown) return;
+        const links = dropdown.querySelectorAll('.dropdown-content a');
+        links.forEach(link => {
+          link.onclick = (e) => {
+            e.stopPropagation();
+            const qq = link.getAttribute('data-qq');
+            const name = link.getAttribute('data-name');
+            if (qq) {
+              copyText(qq);
+              showToast(`已复制${name} QQ:${qq}`);
+            }
+            dropdown.classList.remove('open');
+            return false;
+          };
+        });
+      });
+    }
+    
+    // ========== 地址解析函数（保持原样） ==========
+    function parseAddress(ptrStr) {
+      try {
+        var parts = ptrStr.split('+');
+        var rangeList = h5gg.getRangesList(parts[0]);
+        if (!rangeList || rangeList.length === 0) return null;
+        var addr = Number(rangeList[0].start);
+        for (var i = 1; i < parts.length; i++) {
+          if (i === 1) addr += Number(parts[i]);
+          else {
+            var val = h5gg.getValue(addr, 'I64');
+            if (val === undefined) throw new Error('读取失败');
+            addr = Number(val) + Number(parts[i]);
+          }
+        }
+        return '0x' + addr.toString(16).toUpperCase();
+      } catch (e) { return null; }
+    }
+    
+    // ========== 除雾（单个开关：先地址修改，再定时器持续写入） ==========
+    let fogInterval = null;
+    let fogActive = false;
+    const FOG_ADDR_STR = "UnityFramework+0x660BA40+0x3E8+0x234";
+    function toggleFog() {
+      if (typeof h5gg === 'undefined') {
+        showToast('未检测到H5GG环境');
+        document.getElementById('fogToggle').checked = false;
+        return;
+      }
+      if (!fogActive) {
+        let fogAddr = parseAddress(FOG_ADDR_STR);
+        if (!fogAddr) {
+          showToast('获取除雾地址失败，请确保已进入游戏并点开小地图');
+          document.getElementById('fogToggle').checked = false;
+          return;
+        }
+        try {
+          h5gg.setValue(fogAddr, 0, 'F32');
+        } catch(e) {
+          showToast('除雾修改失败：' + e.message);
+          document.getElementById('fogToggle').checked = false;
+          return;
+        }
+        fogInterval = setInterval(() => {
+          try {
+            if (typeof h5gg !== 'undefined' && fogAddr) h5gg.setValue(fogAddr, 0, 'F32');
+          } catch(e) {}
+        }, 10);
+        fogActive = true;
+        showToast('除雾已开启（持续生效）');
+      } else {
+        if (fogInterval) { clearInterval(fogInterval); fogInterval = null; }
+        let fogAddr = parseAddress(FOG_ADDR_STR);
+        if (fogAddr) {
+          try { h5gg.setValue(fogAddr, 0.43, 'F32'); } catch(e) {}
+        }
+        fogActive = false;
+        showToast('除雾已关闭');
+      }
+    }
+    
+    // ========== 夜视（带滑块，实时调整数值） ==========
+    let nightInterval = null;
+    let nightActive = false;
+    let nightValue = 5;
+    const NIGHT_ADDR_STR = "UnityFramework+0x65E8FD8+0x238+0x280+0x20+0xB0";
+    function controlNight(active) {
+      if (typeof h5gg === 'undefined') { showToast('未检测到H5GG环境'); if (document.getElementById('nightToggle')) document.getElementById('nightToggle').checked = false; return; }
+      if (active && !nightActive) {
+        if (nightInterval) clearInterval(nightInterval);
+        let nightAddr = parseAddress(NIGHT_ADDR_STR);
+        if (!nightAddr) { showToast('获取夜视地址失败'); if (document.getElementById('nightToggle')) document.getElementById('nightToggle').checked = false; return; }
+        nightActive = true;
+        nightInterval = setInterval(() => {
+          try {
+            if (typeof h5gg !== 'undefined' && nightAddr) {
+              h5gg.setValue(nightAddr, 9999, 'F32');
+              h5gg.setValue(Number(nightAddr)+8, nightValue, 'F32');
+            }
+          } catch(e) {}
+        }, 50);
+        showToast(`夜视开启成功 (强度 ${nightValue})`);
+      } else if (!active && nightActive) {
+        if (nightInterval) { clearInterval(nightInterval); nightInterval = null; }
+        let nightAddr = parseAddress(NIGHT_ADDR_STR);
+        if (nightAddr) {
+          try {
+            h5gg.setValue(nightAddr, 0.4, 'F32');
+            h5gg.setValue(Number(nightAddr)+8, 0, 'F32');
+          } catch(e) {}
+        }
+        nightActive = false;
+        showToast('夜视关闭成功');
+      }
+    }
+    function updateNightStrength(val) {
+      nightValue = val;
+      if (nightActive) {
+        let nightAddr = parseAddress(NIGHT_ADDR_STR);
+        if (nightAddr) {
+          try { h5gg.setValue(Number(nightAddr)+8, nightValue, 'F32'); } catch(e) {}
+        }
+      }
+    }
+    
+    // ========== 广角（带滑块，实时调整数值） ==========
+    let wideInterval = null;
+    let wideActive = false;
+    let wideValue = 80;
+    const WIDE_ADDR_STR = "UnityFramework+0x65E8D88+0x238+0x100+0xB0+0x1D0";
+    function controlWide(active) {
+      if (typeof h5gg === 'undefined') { showToast('未检测到H5GG环境'); if (document.getElementById('wideToggle')) document.getElementById('wideToggle').checked = false; return; }
+      if (active && !wideActive) {
+        if (wideInterval) clearInterval(wideInterval);
+        let wideAddr = parseAddress(WIDE_ADDR_STR);
+        if (!wideAddr) { showToast('获取广角地址失败'); if (document.getElementById('wideToggle')) document.getElementById('wideToggle').checked = false; return; }
+        wideActive = true;
+        wideInterval = setInterval(() => {
+          try {
+            if (typeof h5gg !== 'undefined' && wideAddr) h5gg.setValue(wideAddr, wideValue, 'F32');
+          } catch(e) {}
+        }, 70);
+        showToast(`广角开启成功 (${wideValue})`);
+      } else if (!active && wideActive) {
+        if (wideInterval) { clearInterval(wideInterval); wideInterval = null; }
+        let wideAddr = parseAddress(WIDE_ADDR_STR);
+        if (wideAddr) try { h5gg.setValue(wideAddr, 55, 'F32'); } catch(e) {}
+        wideActive = false;
+        showToast('广角关闭成功');
+      }
+    }
+    function updateWideStrength(val) {
+      wideValue = val;
+      if (wideActive) {
+        let wideAddr = parseAddress(WIDE_ADDR_STR);
+        if (wideAddr) {
+          try { h5gg.setValue(wideAddr, wideValue, 'F32'); } catch(e) {}
+        }
+      }
+    }
+    
+    // ========== 显棺（不变） ==========
+    let boxInterval = null;
+    let boxActive = false;
+    const BOX_ADDR_STR = "UnityFramework+0x66138F8+0x1A0+0xB8+0x160+0x90";
+    function controlCoffin(active) {
+      if (typeof h5gg === 'undefined') { showToast('未检测到H5GG环境'); if (document.getElementById('boxBtn')) document.getElementById('boxBtn').checked = false; return; }
+      if (active && !boxActive) {
+        if (boxInterval) clearInterval(boxInterval);
+        let boxAddr = parseAddress(BOX_ADDR_STR);
+        if (!boxAddr) { showToast('获取显棺地址失败'); if (document.getElementById('boxBtn')) document.getElementById('boxBtn').checked = false; return; }
+        boxActive = true;
+        boxInterval = setInterval(() => {
+          try {
+            if (typeof h5gg !== 'undefined' && boxAddr) {
+              h5gg.setValue(boxAddr, 9999, 'F32');
+              h5gg.setValue(Number(boxAddr)+4, 9999, 'F32');
+              h5gg.setValue(Number(boxAddr)+8, 9999, 'F32');
+              h5gg.setValue(Number(boxAddr)+12, 9999, 'F32');
+            }
+          } catch(e) {}
+        }, 50);
+        showToast('显棺开启成功');
+      } else if (!active && boxActive) {
+        if (boxInterval) { clearInterval(boxInterval); boxInterval = null; }
+        let boxAddr = parseAddress(BOX_ADDR_STR);
+        if (boxAddr) {
+          try {
+            h5gg.setValue(boxAddr, 0, 'F32');
+            h5gg.setValue(Number(boxAddr)+4, 0, 'F32');
+            h5gg.setValue(Number(boxAddr)+8, 0, 'F32');
+            h5gg.setValue(Number(boxAddr)+12, 0, 'F32');
+          } catch(e) {}
+        }
+        boxActive = false;
+        showToast('显棺关闭成功');
+      }
+    }
+    
+    // ========== 除磁（不变） ==========
+    let magActive = false;
+    const ORIGIN_I64 = "4866983823437135872";
+    const MAG_RANGE_START = "0x100000000";
+    const MAG_RANGE_END = "0x200000000";
+    function longgong(toggle) {
+      if (typeof h5gg === 'undefined') { showToast('未检测到H5GG环境，请先挂载游戏'); return; }
+      if (toggle && !magActive) {
+        try {
+          h5gg.clearResults();
+          h5gg.searchNumber(ORIGIN_I64, 'I64', MAG_RANGE_START, MAG_RANGE_END);
+          var count = h5gg.getResultsCount();
+          if (count === 0) throw new Error("未搜到目标");
+          var r = h5gg.getResults(count);
+          for (var i = 0; i < count; i++) h5gg.setValue(r[i].address, 0, 'I64');
+          h5gg.clearResults();
+          magActive = true;
+          showToast('除磁开启成功');
+        } catch (e) {
+          showToast('除磁开启失败：' + e.message);
+          if (document.getElementById('magBtn')) document.getElementById('magBtn').checked = false;
+        }
+      } else if (!toggle && magActive) {
+        try {
+          h5gg.clearResults();
+          h5gg.searchNumber(0, 'I64', MAG_RANGE_START, MAG_RANGE_END);
+          var count = h5gg.getResultsCount();
+          if (count === 0) throw new Error("未找到还原地址");
+          var r = h5gg.getResults(count);
+          for (var i = 0; i < count; i++) {
+            if (h5gg.getValue(r[i].address, 'I64') === 0) h5gg.setValue(r[i].address, ORIGIN_I64, 'I64');
+          }
+          h5gg.clearResults();
+          magActive = false;
+          showToast('除磁关闭成功');
+        } catch (e) { showToast('除磁关闭失败：' + e.message); }
+      }
+    }
+    
+    // 防闪（空）
+    function antiCrashPlaceholder(active) {
+      if (active) showToast('防闪已开启（请断网重连）');
+      else showToast('防闪已关闭');
+    }
+    
+    // 武器无后摇等原有功能（不变）
+    function toggleWalkieTalkie(isEnabled) {
+      try {
+        const searchVals = [10205, 400005];
+        const modifyVal = 400002;
+        if (typeof h5gg === 'undefined') throw new Error('未检测到H5GG');
+        searchVals.forEach(val => {
+          h5gg.searchNumber(val, 'I32', '0x100000000', '0x160000000');
+          if (h5gg.getResultsCount() > 0) h5gg.editAll(isEnabled ? modifyVal : val, 'I32');
+          h5gg.clearResults();
+        });
+        showToast(isEnabled ? '枪械无后坐开启成功' : '枪械无后坐关闭成功');
+      } catch (error) { showToast(`操作失败：${error.message}`); }
+    }
+    
+    function applyWeaponShanzi(enabled) {
+      if (!enabled) { showToast('扇子无后摇关闭成功'); return; }
+      try {
+        h5gg.searchNumber('0.8569999933242798', 'F32', '0x100000000', '0x300000000');
+        let cnt = h5gg.getResultsCount();
+        let res = h5gg.getResults(cnt);
+        h5gg.clearResults();
+        for (let i = 0; i < cnt; i++) {
+          let addr = res[i].address;
+          if (h5gg.getValue(Number(addr) + 32, 'F32') == 1.0 && h5gg.getValue(Number(addr) + 188, 'F32') == 1.0) {
+            h5gg.setValue(Number(addr) + 32, 2147483647.0, 'F32');
+            h5gg.setValue(Number(addr) + 188, 2147483647.0, 'F32');
+            h5gg.setValue(Number(addr) + 348, 0.25, 'F32');
+            h5gg.setValue(Number(addr) + 532, 0.25, 'F32');
+          }
+        }
+        showToast('扇子无后摇开启成功');
+      } catch (e) { showToast('扇子无后摇操作失败'); }
+    }
+    
+    function applyWeaponTaomu(enabled) {
+      if (!enabled) { showToast('桃木剑无后摇关闭成功'); return; }
+      try {
+        h5gg.searchNumber('0.7115384936332703', 'F32', '0x100000000', '0x300000000');
+        let cnt = h5gg.getResultsCount();
+        let res = h5gg.getResults(cnt);
+        h5gg.clearResults();
+        for (let i = 0; i < cnt; i++) {
+          let addr = res[i].address;
+          if (h5gg.getValue(Number(addr) + 40, 'F32') == 3.0 && h5gg.getValue(Number(addr) + 1280, 'F32') == 3.0) {
+            h5gg.setValue(Number(addr) + 1388, 9.999999796611898E-32, 'F32');
+            h5gg.setValue(Number(addr) + 1204, 9.999999796611898E-32, 'F32');
+            h5gg.setValue(Number(addr) + 992, 4.5, 'F32');
+          }
+        }
+        showToast('桃木剑无后摇开启成功');
+      } catch (e) { showToast('桃木剑无后摇操作失败'); }
+    }
+    
+    function applyWeaponSan(enabled) {
+      if (!enabled) { showToast('伞无后摇关闭成功'); return; }
+      try {
+        h5gg.searchNumber('0.699999988079071', 'F32', '0x100000000', '0x300000000');
+        let cnt = h5gg.getResultsCount();
+        let res = h5gg.getResults(cnt);
+        h5gg.clearResults();
+        for (let i = 0; i < cnt; i++) {
+          let addr = res[i].address;
+          if (h5gg.getValue(Number(addr) + 80, 'F32') == 1.0 && h5gg.getValue(Number(addr) + 820, 'F32') == 1.0) {
+            h5gg.setValue(Number(addr) + 80, 0.20000000298023224, 'F32');
+            h5gg.setValue(Number(addr) + 820, 0.800000011920929, 'F32');
+          }
+        }
+        showToast('伞无后摇开启成功');
+      } catch (e) { showToast('伞无后摇操作失败'); }
+    }
+    
+    function applyWeaponChangqiang(enabled) {
+      if (!enabled) { showToast('长枪无后摇关闭成功'); return; }
+      try {
+        h5gg.searchNumber('-3.0717201832986793E28', 'F32', '0x100000000', '0x300000000');
+        let cnt = h5gg.getResultsCount();
+        let res = h5gg.getResults(cnt);
+        h5gg.clearResults();
+        for (let i = 0; i < cnt; i++) { let addr = res[i].address; if (h5gg.getValue(Number(addr) - 4832, 'F32') == 1.0) h5gg.setValue(Number(addr) - 4832, 9.99999917e33, 'F32'); } showToast('长枪无后摇开启成功');
+      } catch (e) { showToast('长枪无后摇操作失败'); }
+    }
+    
+    function applyWeaponBianzi(enabled) {
+      if (!enabled) { showToast('鞭子无后摇关闭成功'); return; }
+      try {
+        h5gg.searchNumber('-2113440514', 'I32', '0x100000000', '0x300000000');
+        let cnt = h5gg.getResultsCount();
+        let res = h5gg.getResults(cnt);
+        h5gg.clearResults();
+        for (let i = 0; i < cnt; i++) {
+          let addr = res[i].address;
+          if (h5gg.getValue(Number(addr) + 8, 'I32') == -1896010620) {
+            h5gg.setValue(Number(addr) + 32, 999, 'F32');
+            h5gg.setValue(Number(addr) + 816, 999, 'F32');
+            h5gg.setValue(Number(addr) + 1688, 999, 'F32');
+          }
+        }
+        showToast('鞭子无后摇开启成功');
+      } catch (e) { showToast('鞭子无后摇操作失败'); }
+    }
+    
+    function handleWeaponSwitch(weapon, enabled) {
+      switch (weapon) {
+        case 'shanzi': applyWeaponShanzi(enabled); break;
+        case 'taomu': applyWeaponTaomu(enabled); break;
+        case 'san': applyWeaponSan(enabled); break;
+        case 'changqiang': applyWeaponChangqiang(enabled); break;
+        case 'bianzi': applyWeaponBianzi(enabled); break;
+      }
+    }
+    
+    // ========== 皮肤数据与逻辑（不变） ==========
+    const skinData = { "小黄": { "原皮": { "头": 20000002, "脸": 20000005, "衣": 20000008 }, "遗失的童话": { "头": 20000259, "脸": 20000260, "衣": 20000258 }, "霓裳踏雪": { "头": 20000244, "脸": 20000245, "衣": 20000243 }, "青丘一梦": { "头": 20000218, "脸": 20000229, "衣": 20000210 }, "罗丽": { "头": 20000285, "脸": 20000286, "衣": 20000287 }, "异色序曲": { "头": 20000329, "脸": 20000330, "衣": 20000328 }, "呱呱雨衣": { "头": 20000318, "脸": 20000319, "衣": 20000317 }, "火线先锋": { "头": 20000211, "衣": 20000201 }, "后室幸存者": { "头": 200023, "衣": 200024 }, "炽天使": { "头": 20000420, "脸": 20000421, "衣": 20000419 } }, "爱丽丝": { "原皮": { "头": 20000010, "脸": 20000011, "衣": 20000012 }, "血色中的玛丽": { "头": 20000233, "脸": 20000234, "衣": 20000232 }, "瑞羽衔春": { "头": 20000251, "脸": 20000252, "衣": 20000250 }, "冰公主": { "头": 20000278, "脸": 20000279, "衣": 20000280 }, "丝缕哀歌": { "头": 20000273, "脸": 20000277, "衣": 20000272 }, "春日心情": { "头": 20000212, "衣": 20000202 }, "薯牌甜心": { "头": 20000231, "衣": 20000230 }, "甜梦派对": { "头": 20000339, "脸": 20000340, "衣": 20000341 }, "耀眼的你": { "头": 20000423, "脸": 20000424, "衣": 20000425 } }, "零": { "原皮": { "头": 20000013, "脸": 20000014, "衣": 20000015 }, "赤炼将军": { "头": 20000237, "脸": 20000238, "衣": 20000239 }, "青云逸歌": { "头": 20000265, "脸": 20000266, "衣": 20000267 }, "卡皮巴拉": { "头": 20000213, "衣": 20000203 }, "搬开山": { "头": 20000405, "脸": 20000406, "衣": 20000407 }, "渡鸦公爵": { "头": 20000412, "脸": 20000413, "衣": 20000411 }, "磨砺成锋": { "头": 20000457, "脸": 20000458, "衣": 20000459 } }, "阿念": { "原皮": { "头": 20000502, "脸": 20000503, "衣": 20000504 }, "灵昭鹿鸣": { "头": 20000241, "脸": 20000242, "衣": 20000240 }, "王子与骑士": { "头": 20000263, "脸": 20000264, "衣": 20000262 }, "迷途僵宝": { "头": 20000321, "脸": 20000322, "衣": 20000320 }, "庆宴绮愿": { "头": 20000429, "脸": 20000430, "衣": 20000431 } }, "逍遥": { "原皮": { "头": 20000601, "脸": 20000602, "衣": 20000603 }, "莲华渡": { "头": 20000333, "脸": 20000334, "衣": 20000332 }, "泽引山海": { "头": 20000248, "脸": 20000249, "衣": 20000247 }, "绣春逍影": { "头": 20006003, "脸": 20006004, "衣": 20006002 }, "剑仙": { "头": 20006045, "脸": 20006046, "衣": 20006047 }, "万迭云华": { "头": 20000474, "脸": 20000475, "衣": 20000476 } }, "薇薇安": { "原皮": { "头": 20000701, "脸": 20000702, "衣": 20000703 }, "黑月挽歌": { "头": 20000256, "脸": 20000257, "衣": 20000255 }, "圣光之逾": { "头": 20000275, "脸": 20000276, "衣": 20000274 }, "白光莹": { "头": 20000288, "脸": 20000289, "衣": 20000290 }, "仙锋小姐": { "头": 20000402, "脸": 20000403, "衣": 20000404 }, "沧海之遗紫": { "头": 20000442, "脸": 20000443, "衣": 20000444 }, "沧海之遗粉": { "头": 20000445, "脸": 20000446, "衣": 20000447 }, "海月息潮": { "头": 20000448, "脸": 20000449, "衣": 20000450 } }, "巫铃儿": { "原皮": { "头": 20000801, "脸": 20000802, "衣": 20000803 }, "素影瑶光": { "头": 20000268, "脸": 20000269, "衣": 20000270 }, "镜生遗梦红": { "头": 20000294, "脸": 20000295, "衣": 20000296 }, "镜生遗梦白": { "头": 20000297, "脸": 20000298, "衣": 20000299 }, "镜花辞": { "头": 20000314, "脸": 20000315, "衣": 20000316 }, "琢玉怀乡": { "头": 20000451, "脸": 20000452, "衣": 20000453 } }, "莉莉": { "原皮": { "头": 20000901, "脸": 20000902, "衣": 20000903 }, "情公主": { "头": 20000281, "脸": 20000282, "衣": 20000283 }, "捉妖小师妹": { "头": 20000324, "脸": 20000327, "衣": 20000323 }, "莓果魔盒": { "头": 20006008, "脸": 20006009, "衣": 20006007 }, "瑶台梦": { "头": 20000427, "脸": 20000428, "衣": 20000426 } }, "艾伦": { "原皮": { "头": 20001001, "脸": 20001002, "衣": 20001003 }, "水王子": { "头": 20000291, "脸": 20000292, "衣": 20000293 }, "绒绒对决": { "头": 20000342, "脸": 20000343, "衣": 20000344 }, "黎明猎手": { "头": 20006028, "脸": 20006029, "衣": 20006027 } }, "爱德华": { "原皮": { "头": 20001101, "脸": 20001102, "衣": 20001103 }, "梵卓之礼": { "头": 20006033, "脸": 20006034, "衣": 20006032 } }, "兰": { "原皮": { "头": 20001201, "脸": 20001202, "衣": 20001203 }, "千夜星谕": { "头": 20000408, "脸": 20000409, "衣": 20000410 }, "春之声": { "头": 20000433, "脸": 20000434, "衣": 20000432 } }, "小满": { "原皮": { "头": 20001301, "脸": 20001302, "衣": 20001303 }, "绛云": { "头": 20000418, "衣": 20000417 }, "燕燕于飞": { "头": 20000465, "脸": 20000466, "衣": 20000467 } }, "临云": { "原皮": { "头": 20001401, "脸": 20001402, "衣": 20001403 }, "织锦云程": { "头": 20000454, "脸": 20000455, "衣": 20000456 } } };
+    let currentRole = "";
+    const confirmLayer = document.getElementById("confirmLayer");
+    const confirmText = document.getElementById("confirmText");
+    
+    function goSkinPage(id) {
+      document.querySelectorAll("#content3 .skin-page").forEach(page => page.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+    
+    function selRole(name) {
+      currentRole = name;
+      document.getElementById("partRoleTitle").innerText = name;
+      goSkinPage("katou-part");
+    }
+    
+    function goPart(part) {
+      let id, titleId, listId;
+      if (part == "头") { id = "head-skin"; titleId = "headTitle"; listId = "headList"; }
+      else if (part == "脸") { id = "face-skin"; titleId = "faceTitle"; listId = "faceList"; }
+      else { id = "body-skin"; titleId = "bodyTitle"; listId = "bodyList"; }
+      document.getElementById(titleId).innerText = `${part == "头" ? "🐾头部" : part == "脸" ? "脸部" : "身体"} - ${currentRole}`;
+      let list = document.getElementById(listId);
+      list.innerHTML = "";
+      let skins = Object.keys(skinData[currentRole]).filter(s => s !== "原皮" && skinData[currentRole][s][part]);
+      skins.forEach(skin => {
+        let btn = document.createElement("button");
+        btn.className = "skin-btn";
+        btn.innerText = skin;
+        btn.onclick = () => {
+          showConfirm(`是否应用【${currentRole}】${part == "头" ? "头部" : part == "脸" ? "脸部" : "身体"}：${skin}`, () => {
+            applySinglePart(currentRole, part, skin);
+            confirmLayer.style.display = "none";
+          });
+        };
+        list.appendChild(btn);
+      });
+      goSkinPage(id);
+    }
+    
+    function hpRole(name) {
+      currentRole = name;
+      document.getElementById("hpTitle").innerText = name;
+      let list = document.getElementById("hpList");
+      list.innerHTML = "";
+      let skins = Object.keys(skinData[currentRole]).filter(s => s !== "原皮");
+      skins.forEach(skin => {
+        let btn = document.createElement("button");
+        btn.className = "skin-btn";
+        btn.innerText = skin;
+        btn.onclick = () => {
+          showConfirm(`是否给应用【${currentRole}】皮肤：${skin}`, () => {
+            applySkin(currentRole, skin);
+            confirmLayer.style.display = "none";
+          });
+        };
+        list.appendChild(btn);
+      });
+      let restoreBtn = document.createElement("button");
+      restoreBtn.className = "restore-skin-btn";
+      restoreBtn.innerText = "🐾 恢复原皮 🐾";
+      restoreBtn.onclick = () => {
+        showConfirm(`是否恢复【${currentRole}】原皮？`, () => {
+          restoreOriginalSkin(currentRole);
+          confirmLayer.style.display = "none";
+        });
+      };
+      list.appendChild(restoreBtn);
+      goSkinPage("huanpi-skin");
+    }
+    
+    function applySinglePart(role, part, skinName) {
+      if (!window.h5gg) { showToast('未检测到H5GG环境'); return; }
+      const targetSkin = skinData[role][skinName];
+      const original = skinData[role].原皮[part];
+      if (!targetSkin || !targetSkin[part] || !original) { showToast('皮肤数据缺失'); return; } 
+      try {
+        h5gg.searchNumber(original, 'I32', '0x100000000', '0x160000000');
+        const count = h5gg.getResultsCount?.() || h5gg.getResultCount?.() || 0;
+        if (count > 0) {
+          h5gg.editAll(targetSkin[part], 'I32');
+          showToast('应用成功');
+        } else showToast('应用失败');
+        h5gg.clearResults();
+      } catch(e) { showToast('操作失败'); }
+    }
+    
+    function applySkin(role, skin) {
+      if (!window.h5gg) { showToast('未检测到H5GG环境'); return; }
+      const o = skinData[role].原皮;
+      const t = skinData[role][skin];
+      let ok = false;
+      try {
+        ['头', '脸', '衣'].forEach(k => {
+          if (!t[k] || !o[k]) return;
+          h5gg.searchNumber(o[k], 'I32', '0x100000000', '0x160000000');
+          const c = h5gg.getResultsCount?.() || h5gg.getResultCount?.() || 0;
+          if (c > 0) {
+            h5gg.editAll(t[k], 'I32');
+            ok = true;
+          }
+          h5gg.clearResults();
+        });
+        showToast(ok ? '应用成功' : '应用失败');
+      } catch(e) { showToast('操作失败'); }
+    }
+    
+    function restoreOriginalSkin(role) {
+      if (!window.h5gg) { showToast('未检测到H5GG环境'); return; }
+      if (!role || !skinData[role]) { showToast('请先选择角色！'); return; }
+      const o = skinData[role].原皮;
+      let ok = false;
+      try {
+        for (let s in skinData[role]) {
+          if (s === '原皮') continue;
+          const t = skinData[role][s];
+          ['头', '脸', '衣'].forEach(k => {
+            if (!t[k] || !o[k]) return;
+            h5gg.searchNumber(t[k], 'I32', '0x100000000', '0x160000000');
+            const c = h5gg.getResultsCount?.() || h5gg.getResultCount?.() || 0;
+            if (c > 0) {
+              h5gg.editAll(o[k], 'I32');
+              ok = true;
+            }
+            h5gg.clearResults();
+          });
+        }
+        showToast(ok ? '已恢复原皮' : '恢复失败');
+      } catch(e) { showToast('恢复失败'); }
+    }
+    
+    function showConfirm(msg, okFn) {
+      confirmText.innerText = msg;
+      confirmLayer.style.display = "flex";
+      document.getElementById("confirmYes").onclick = okFn;
+      document.getElementById("confirmNo").onclick = () => { confirmLayer.style.display = "none"; };
+    }
+    const roleNames = ["小黄", "爱丽丝", "零", "阿念", "逍遥", "薇薇安", "巫铃儿", "莉莉", "艾伦", "爱德华", "兰", "小满", "临云"];
+    const katouGrid = document.getElementById("katouRoleGrid");
+    if (katouGrid) {
+      roleNames.forEach(name => {
+        let btn = document.createElement("button");
+        btn.className = "role-btn";
+        btn.innerText = name;
+        btn.onclick = () => selRole(name);
+        katouGrid.appendChild(btn);
+      });
+    }
+    const huanpiGrid = document.getElementById("huanpiRoleGrid");
+    if (huanpiGrid) {
+      roleNames.forEach(name => {
+        let btn = document.createElement("button");
+        btn.className = "role-btn";
+        btn.innerText = name;
+        btn.onclick = () => hpRole(name);
+        huanpiGrid.appendChild(btn);
+      });
+    }
+    
+    // ========== 音乐播放器（不变） ==========
+    const MUSIC_API = { token: "6C41B0BD6950A80DE0B68A7684376BAE", url: "https://api.suol.cc/v1/yy_sq.php" };
+    const STATIC_PLAYLIST = [
+      { name: "雪下的时候", artist: "乔佳旭" },
+      { name: "unravel", artist: "Ado" },
+      { name: "masayumechasing", artist: "" },
+      { name: "brave heart", artist: "" }
+    ];
+    
+    let audio = null;
+    let currentSongIndex = 0;
+    let isPlaying = false;
+    let repeatMode = 0;
+    let currentSongUrl = null;
+    let isLoading = false;
+    
+    function collapsePlaylist() {
+      const container = document.getElementById('playlistContainer');
+      const arrow = document.querySelector('.fold-arrow');
+      if (container && container.classList.contains('open')) container.classList.remove('open');
+      if (arrow && arrow.classList.contains('open')) arrow.classList.remove('open');
+    }
+    
+    function renderStaticPlaylist() {
+      const container = document.getElementById('playlistContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      STATIC_PLAYLIST.forEach((song, idx) => {
+        const div = document.createElement('div');
+        div.className = 'playlist-item';
+        div.setAttribute('data-index', idx);
+        div.innerText = `${song.name}${song.artist ? ' - ' + song.artist : ''}`;
+        div.onclick = () => { playSongByIndex(idx); };
+        container.appendChild(div);
+      });
+      refreshPlaylistActive();
+    }
+    
+    function refreshPlaylistActive() {
+      const items = document.querySelectorAll('.playlist-item');
+      items.forEach((item, idx) => {
+        const dataIdx = parseInt(item.getAttribute('data-index'));
+        if (dataIdx === currentSongIndex) item.classList.add('active');
+        else item.classList.remove('active');
+      });
+    }
+    
+    function destroyAudio() {
+      if (audio) {
+        audio.pause();
+        audio.src = '';
+        audio.removeEventListener('canplay', null);
+        audio.removeEventListener('error', null);
+        audio.removeEventListener('ended', null);
+        audio.removeEventListener('timeupdate', null);
+        audio = null;
+      }
+      currentSongUrl = null;
+      isPlaying = false;
+      document.getElementById("playPauseBtn").innerText = "▶";
+    }
+    
+    async function fetchSongUrl(songName, artist) {
+      try {
+        const query = `${songName} ${artist}`.trim();
+        const res = await fetch(`${MUSIC_API.url}?type=qq&msg=${encodeURIComponent(query)}&n=1&m_token=${MUSIC_API.token}`);
+        const data = await res.json();
+        if (data.code === 200 && data.url) return data;
+        return null;
+      } catch (e) { return null; }
+    }
+    
+    async function playSongByIndex(index) {
+      if (isLoading) { showToast("正在加载中，请稍后"); return; }
+      if (index < 0 || index >= STATIC_PLAYLIST.length) return;
+      collapsePlaylist();
+      const song = STATIC_PLAYLIST[index];
+      const songTitle = `${song.name}${song.artist ? ' - ' + song.artist : ''}`;
+      document.getElementById("songTitle").innerText = `加载中... ${songTitle}`;
+      isLoading = true;
+      destroyAudio();
+      try {
+        const result = await fetchSongUrl(song.name, song.artist);
+        if (!result || !result.url) { showToast("获取歌曲链接失败"); document.getElementById("songTitle").innerText = songTitle; isLoading = false; return; }
+        audio = new Audio();
+        audio.src = result.url;
+        audio.load();
+        audio.addEventListener('canplay', () => {
+          audio.play().then(() => {
+            isPlaying = true;
+            document.getElementById("playPauseBtn").innerText = "⏸";
+            document.getElementById("songTitle").innerText = `${result.name} - ${result.singer || '未知'}`;
+            currentSongIndex = index;
+            currentSongUrl = result.url;
+            refreshPlaylistActive();
+            isLoading = false;
+          }).catch(err => { showToast("播放失败: " + err.message); document.getElementById("songTitle").innerText = songTitle; isLoading = false; });
+        }, { once: true });
+        audio.addEventListener('error', () => { if (audio.error) showToast("音频加载错误"); document.getElementById("songTitle").innerText = songTitle; isLoading = false; }, { once: true });
+        audio.addEventListener("ended", () => {
+          if (repeatMode === 0) nextSong();
+          else if (repeatMode === 1) audio.play().catch(e => console.warn);
+          else { audio.pause(); isPlaying = false; document.getElementById("playPauseBtn").innerText = "▶"; }
+        });
+        audio.addEventListener("timeupdate", () => { const pct = (audio.currentTime / audio.duration) * 100 || 0; document.getElementById("progressBar").value = pct; });
+        document.getElementById("progressBar").addEventListener("input", () => { if (!audio || !audio.duration) return; audio.currentTime = (document.getElementById("progressBar").value / 100) * audio.duration; });
+      } catch (err) { showToast("加载失败"); document.getElementById("songTitle").innerText = songTitle; isLoading = false; }
+    }
+    
+    async function togglePlay() {
+      if (!audio || !currentSongUrl) await playSongByIndex(currentSongIndex);
+      else {
+        if (isPlaying) { audio.pause(); isPlaying = false; document.getElementById("playPauseBtn").innerText = "▶"; }
+        else { audio.play().catch(e => showToast("播放失败")); isPlaying = true; document.getElementById("playPauseBtn").innerText = "⏸"; }
+      }
+    }
+    
+    async function prevSong() { let idx = currentSongIndex - 1; if (idx < 0) idx = STATIC_PLAYLIST.length - 1; currentSongIndex = idx; await playSongByIndex(currentSongIndex); }
+    async function nextSong() { let idx = currentSongIndex + 1; if (idx >= STATIC_PLAYLIST.length) idx = 0; currentSongIndex = idx; await playSongByIndex(currentSongIndex); }
+    function toggleRepeat() { repeatMode = (repeatMode + 1) % 3; const txt = ["🔁", "🔂", "⏹"]; document.getElementById("repeatBtn").innerText = txt[repeatMode]; }
+    function initMusicUI() {
+      renderStaticPlaylist();
+      currentSongIndex = 0;
+      refreshPlaylistActive();
+      document.getElementById("songTitle").innerText = "让我们嗨起来好吗？";
+      document.getElementById('foldBar').onclick = function() { const container = document.getElementById('playlistContainer'); const arrow = document.querySelector('.fold-arrow'); container.classList.toggle('open'); arrow.classList.toggle('open'); };
+      document.getElementById("playPauseBtn").onclick = togglePlay;
+      document.getElementById("prevBtn").onclick = prevSong;
+      document.getElementById("nextBtn").onclick = nextSong;
+      document.getElementById("repeatBtn").onclick = toggleRepeat;
+    }
+    
+    // ========== 启动所有功能（绑定开关事件） ==========
+    function startAllFeatures() {
+      if (window._featuresStarted) return;
+      window._featuresStarted = true;
+      createBubbles();
+      
+      // 防闪
+      const antiSwitch = document.getElementById('antiCrashSwitch');
+      if (antiSwitch) antiSwitch.addEventListener('change', function(e) { antiCrashPlaceholder(this.checked); });
+      
+      // 夜视开关 + 滑块
+      const nightToggle = document.getElementById('nightToggle');
+      const nightSlider = document.getElementById('nightSlider');
+      if (nightToggle) nightToggle.addEventListener('change', function(e) { controlNight(this.checked); });
+      if (nightSlider) {
+        nightSlider.addEventListener('input', function(e) { updateNightStrength(parseInt(e.target.value)); });
+      }
+      
+      // 广角开关 + 滑块
+      const wideToggle = document.getElementById('wideToggle');
+      const wideSlider = document.getElementById('wideSlider');
+      if (wideToggle) wideToggle.addEventListener('change', function(e) { controlWide(this.checked); });
+      if (wideSlider) {
+        wideSlider.addEventListener('input', function(e) { updateWideStrength(parseInt(e.target.value)); });
+      }
+      
+      // 除雾开关
+      const fogToggle = document.getElementById('fogToggle');
+      if (fogToggle) fogToggle.addEventListener('change', function(e) { toggleFog(); });
+      
+      // 显棺
+      const boxBtn = document.getElementById('boxBtn');
+      if (boxBtn) boxBtn.addEventListener('change', function(e) { controlCoffin(this.checked); });
+      
+      // 除磁
+      const magBtn = document.getElementById('magBtn');
+      if (magBtn) magBtn.addEventListener('change', function(e) { longgong(this.checked); });
+      
+      // 武器无后摇
+      const shortGun = document.getElementById('shortGunToggle');
+      if (shortGun) shortGun.addEventListener('change', e => toggleWalkieTalkie(e.target.checked));
+      document.querySelectorAll('.weapon-switch').forEach(sw => {
+        sw.addEventListener('change', e => handleWeaponSwitch(sw.dataset.weapon, e.target.checked));
+      });
+      
+      // 页面切换
+      const slotCards = document.querySelectorAll('.slot-card');
+      const contentItems = document.querySelectorAll('.content-item');
+      slotCards.forEach(card => {
+        card.addEventListener('click', () => {
+          const targetId = card.dataset.target;
+          if (!targetId) return;
+          slotCards.forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
+          contentItems.forEach(item => item.classList.remove('active'));
+          const targetContent = document.getElementById(targetId);
+          if (targetContent) targetContent.classList.add('active');
+          if (targetId === 'content3') {
+            document.querySelectorAll("#content3 .skin-page").forEach(p => p.classList.remove('active'));
+            const skinMain = document.getElementById('skin-main');
+            if (skinMain) skinMain.classList.add('active');
+          }
+        });
+      });
+      
+      initMusicUI();
+    }
+    
+    function createBubbles() {
+      const panel = document.getElementById('panel');
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+          const bubble = document.createElement('div');
+          bubble.className = 'bubble';
+          const size = Math.random() * 40 + 10;
+          bubble.style.width = `${size}px`;
+          bubble.style.height = `${size}px`;
+          bubble.style.left = `${Math.random() * 310 + 15}px`;
+          bubble.style.animationDuration = `${Math.random() * 6 + 7}s`;
+          bubble.style.animationDelay = `${Math.random() * 3}s`;
+          panel.appendChild(bubble);
+        }, i * 50);
+      }
+    }
+    
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', async () => {
+      setupDropdowns();
+      setupAdminCopy();
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.onclick = () => {
+          let type = tab.dataset.tab;
+          document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('loginForm').style.display = type === 'login' ? 'flex' : 'none';
+          document.getElementById('registerForm').style.display = type === 'register' ? 'flex' : 'none';
+        };
+      });
+      document.getElementById('doLoginBtn').onclick = async () => {
+        let btn = document.getElementById('doLoginBtn');
+        let originalText = btn.innerText;
+        btn.innerHTML = '<span class="loading-spinner"></span>登录中...';
+        btn.disabled = true;
+        let qq = document.getElementById('loginQq').value.trim();
+        let pwd = document.getElementById('loginPwd').value;
+        let res = await login(qq, pwd);
+        if (res.ok) { onLoginSuccess(res.user); } else { showToast(res.msg); }
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      };
+      document.getElementById('doRegisterBtn').onclick = async () => {
+        let btn = document.getElementById('doRegisterBtn');
+        let originalText = btn.innerText;
+        btn.innerHTML = '<span class="loading-spinner"></span>提交中...';
+        btn.disabled = true;
+        let qq = document.getElementById('regQq').value.trim();
+        let pwd = document.getElementById('regPwd').value;
+        let res = await submitApplication(qq, pwd);
+        showToast(res.msg);
+        if (res.ok) { document.querySelector('.auth-tab[data-tab="login"]').click(); }
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      };
+      document.getElementById('tipsBtn').onclick = showTipsToast;
+      let auto = await checkAutoLogin();
+      if (!auto) {
+        document.getElementById('authLayer').style.display = 'flex';
+        document.getElementById('mainHeaderBtns').style.display = 'none';
+        document.getElementById('mainContentWrapper').style.display = 'none';
+      } else {
+        startAllFeatures();
+      }
+    });
+  </script>
+</body>
+
+</html>

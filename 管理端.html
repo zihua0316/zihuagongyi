@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>子画公益 · 管理系统</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+    }
+    body {
+      background: #fce4ec;
+      padding: 16px 12px 40px;
+      min-height: 100vh;
+    }
+    .admin-container {
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .top-card {
+      background: #ffd9e8;
+      border-radius: 28px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(245, 120, 160, 0.15);
+    }
+    .title h1 {
+      font-size: 1.35rem;
+      color: #c43e6e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      text-align: center;
+      flex-wrap: wrap;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(255, 240, 245, 0.8);
+      border-radius: 60px;
+      padding: 6px 12px;
+      min-height: 48px;
+      flex-wrap: wrap;
+    }
+    .operator-info {
+      background: #ff88b0;
+      border-radius: 40px;
+      padding: 6px 12px;
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-badge {
+      border-radius: 40px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      background: rgba(255, 255, 240, 0.9);
+    }
+    .status-badge.connected {
+      color: #2e7d32;
+    }
+    .status-badge.disconnected {
+      color: #c62828;
+    }
+    .refresh-btn {
+      background: #ff88b0;
+      border: none;
+      border-radius: 40px;
+      padding: 6px 14px;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .add-user-card {
+      background: #ffeef4;
+      border-radius: 20px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+    .add-user-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    .add-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      width: 100%;
+    }
+    .add-input,
+    .add-select,
+    .add-btn {
+      height: 34px;
+      border-radius: 17px;
+      font-size: 12px;
+      border: 1px solid #ff88b0;
+      flex: 1;
+      min-width: 0;
+    }
+    .add-input {
+      padding: 0 12px;
+      background: rgba(255,255,255,0.8);
+      outline: none;
+    }
+    .add-select {
+      padding: 0 6px;
+      background: rgba(255,255,255,0.8);
+      text-align: center;
+      text-align-last: center;
+    }
+    .add-btn {
+      background: #ff88b0;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      height: 34px;
+      border-radius: 17px;
+      padding: 0 14px;
+      font-size: 12px;
+      border: 1px solid #ff88b0;
+      background: rgba(255,255,255,0.8);
+      outline: none;
+    }
+    .search-btn {
+      width: 70px;
+      height: 34px;
+      border-radius: 17px;
+      background: #ff88b0;
+      color: #fff;
+      font-size: 12px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    .stats-card {
+      background: #ffeef4;
+      border-radius: 28px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .filter-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-btn {
+      background: rgba(255, 136, 176, 0.2);
+      border: 1px solid #ff88b0;
+      border-radius: 30px;
+      padding: 8px 4px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #b13e69;
+      text-align: center;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+    .filter-btn.active {
+      background: #ff88b0;
+      color: white;
+    }
+    .filter-btn .count {
+      font-weight: 800;
+      margin-left: 4px;
+    }
+    .user-list {
+      max-height: 580px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .user-card {
+      background: rgba(255, 220, 235, 0.6);
+      backdrop-filter: blur(1px);
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255, 180, 210, 1);
+      transition: all 0.2s ease;
+    }
+    .user-card-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .user-head-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: nowrap;
+      min-width: 0;
+    }
+    .head-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+    .user-qq {
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #c43e6e;
+      background: rgba(255, 240, 245, 0.7);
+      padding: 3px 8px;
+      border-radius: 40px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 30px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-pending { background: #ff9800; color: white; }
+    .badge-active { background: #4caf50; color: white; }
+    .badge-expired { background: #9e9e9e; color: white; }
+    .badge-disabled { background: #f44336; color: white; }
+    .operator-name {
+      font-size: 9px;
+      font-weight: 600;
+      background: rgba(255, 238, 244, 0.8);
+      padding: 2px 6px;
+      border-radius: 30px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .toggle-card-btn {
+      background: rgba(255, 136, 176, 0.3);
+      border: none;
+      border-radius: 30px;
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #b13e69;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .toggle-card-btn:hover {
+      background: #ff88b0;
+      color: white;
+    }
+    .action-area {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .user-card.collapsed .action-area {
+      display: none;
+    }
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+    .btn-row .action-btn,
+    .btn-row .expire-select {
+      flex: 1;
+      height: 34px;
+      border-radius: 17px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+    }
+    .action-btn {
+      border: none;
+      color: white;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    .btn-green { background: rgba(76, 175, 80, 0.85); }
+    .btn-red { background: rgba(244, 67, 54, 0.85); }
+    .btn-yellow { background: rgba(255, 152, 0, 0.85); }
+    .btn-blue { background: rgba(33, 150, 243, 0.85); }
+    .expire-select {
+      padding: 0 6px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      text-align-last: center;
+    }
+    .info-row-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 10px;
+      color: #000;
+      padding: 8px 6px;
+      background: rgba(255, 248, 250, 0.7);
+      border-radius: 18px;
+      flex-wrap: wrap;
+    }
+    .info-item {
+      text-align: center;
+      flex: 1;
+      line-height: 1.4;
+      min-width: 70px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff88b0;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-size: 13px;
+      z-index: 9999;
+      animation: fadeOut 2s forwards;
+      white-space: nowrap;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 217, 232, 0.98);
+      backdrop-filter: blur(12px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .login-box {
+      background: #fff0f5;
+      border-radius: 48px;
+      padding: 40px 28px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .login-box h2 {
+      color: #c43e6e;
+      margin-bottom: 28px;
+      font-size: 1.6rem;
+    }
+    .admin-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .admin-login-btn {
+      background: #ff88b0;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      border-radius: 60px;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    .admin-login-btn:active {
+      transform: scale(0.97);
+      background: #e06e96;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .empty-tip {
+      text-align: center;
+      padding: 30px;
+      color: #000;
+      font-size: 13px;
+    }
+    .connecting-tip {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ff88b0;
+      color: #fff;
+      font-size: 14px;
+      padding: 10px 16px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 9999999;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      white-space: nowrap;
+    }
+    .connecting-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100000;
+    }
+    .modal-box {
+      background: #ffd9e8;
+      border-radius: 28px;
+      padding: 20px 30px;
+      text-align: center;
+      min-width: 200px;
+    }
+    .modal-spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #ff88b0;
+      border-top-color: #c43e6e;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    .delete-btn {
+      width: 100%;
+      background: #d32f2f;
+      color: white;
+      border: none;
+      border-radius: 17px;
+      padding: 8px 0;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .delete-btn:hover {
+      background: #b71c1c;
+    }
+  </style>
+</head>
+<body>
+<div id="adminLoginOverlay" class="login-overlay">
+  <div class="login-box">
+    <h2>🐾 子画公益 🐾</h2>
+    <div class="admin-buttons">
+      <button class="admin-login-btn" data-admin="子画哥哥">✨ 子画哥哥 ✨</button>
+      <button class="admin-login-btn" data-admin="故奈">🌸 故奈 🌸</button>
+    </div>
+  </div>
+</div>
+<div id="connectTip" class="connecting-tip hidden">
+  <div class="connecting-spinner"></div>
+  <span>正在连接云端...</span>
+</div>
+<div id="adminMain" class="admin-container hidden">
+  <div class="top-card">
+    <div class="title"><h1>🐾 子画公益 · 管理系统 🐾</h1></div>
+    <div class="status-row">
+      <span id="operatorDisplay" class="operator-info">👤 --</span>
+      <span id="cloudStatus" class="status-badge disconnected">⚡ 未连接</span>
+      <button id="refreshBtn" class="refresh-btn">🔄 刷新</button>
+    </div>
+  </div>
+
+  <div class="add-user-card">
+    <div class="add-user-form">
+      <div class="add-input-row">
+        <input type="text" id="addQQ" class="add-input" placeholder="QQ号" />
+        <input type="text" id="addPwd" class="add-input" placeholder="密码" />
+      </div>
+      <div class="add-input-row">
+        <select id="addDays" class="add-select">
+          <option value="1">1天</option>
+          <option value="7">7天</option>
+          <option value="30">30天</option>
+          <option value="0">永久</option>
+        </select>
+        <button id="addUserBtn" class="add-btn">✅ 手动激活</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-card">
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" data-filter="all">全部 <span id="countAll" class="count">0</span></button>
+      <button class="filter-btn" data-filter="pending">未激活 <span id="countPending" class="count">0</span></button>
+      <button class="filter-btn" data-filter="active">已激活 <span id="countActive" class="count">0</span></button>
+      <button class="filter-btn" data-filter="expired">已到期 <span id="countExpired" class="count">0</span></button>
+      <button class="filter-btn" data-filter="disabled">已封禁 <span id="countDisabled" class="count">0</span></button>
+      <button class="filter-btn" data-filter="unbound">未绑定 <span id="countUnbound" class="count">0</span></button>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="搜索QQ号..." />
+      <button id="searchBtn" class="search-btn">🔍 搜索</button>
+    </div>
+
+    <div class="user-list" id="userListContainer">
+      <div class="empty-tip">✨ 点击刷新加载用户数据 ✨</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==================== 双 Bin 配置 ====================
+  const MAIN_BIN_ID = "69df8413aaba882197006c91";
+  const APP_BIN_ID = "69df8462856a682189383090";
+  const MASTER_KEY = "$2a$10$t7J8KflA6tWAXy6dlSb38utbTanwWJm/x5uHjWBxt10RQBAkRNai6";
+  
+  let usersData = [];
+  let applicationsData = [];
+  let currentOperator = "";
+  let currentOperatorIcon = "👤";
+  let currentFilter = "all";
+  let searchKeyword = "";
+
+  function showConnectTip() { document.getElementById('connectTip').classList.remove('hidden'); }
+  function hideConnectTip() { document.getElementById('connectTip').classList.add('hidden'); }
+  function showToast(msg, isError = false) {
+    let t = document.createElement('div');
+    t.className = 'toast';
+    t.innerText = msg;
+    if (isError) t.style.background = '#f44336';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2000);
+  }
+  function showLoading(text) {
+    let modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'operationModal';
+    modal.innerHTML = `<div class="modal-box"><span class="modal-spinner"></span><span class="modal-text">${text}</span></div>`;
+    document.body.appendChild(modal);
+  }
+  function hideLoading() { let modal = document.getElementById('operationModal'); if (modal) modal.remove(); }
+
+  function sortUsersByNewest(users) {
+    if (!users || !users.length) return users;
+    return [...users].sort((a, b) => {
+      let timeA = a.createTime || 0;
+      let timeB = b.createTime || 0;
+      if (typeof timeA === 'string') timeA = parseInt(timeA) || 0;
+      if (typeof timeB === 'string') timeB = parseInt(timeB) || 0;
+      return timeB - timeA;
+    });
+  }
+
+  async function fetchUsers() {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${MAIN_BIN_ID}/latest?nocache=${Date.now()}`, {
+        headers: { "X-Master-Key": MASTER_KEY }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return data.record?.users || [];
+    } catch (e) {
+      console.error(e);
+      showToast('云端连接失败: ' + e.message, true);
+      return [];
+    }
+  }
+
+  async function saveUsers(users) {
+    try {
+      await fetch(`https://api.jsonbin.io/v3/b/${MAIN_BIN_ID}`, {
+        method: 'PUT',
+        headers: { "X-Master-Key": MASTER_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ users: users })
+      });
+      return true;
+    } catch (e) {
+      showToast('保存失败: ' + e.message, true);
+      return false;
+    }
+  }
+
+  async function fetchApplications() {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${APP_BIN_ID}/latest?nocache=${Date.now()}`, {
+        headers: { "X-Master-Key": MASTER_KEY }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return data.record?.applications || [];
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }
+
+  async function saveApplications(apps) {
+    try {
+      await fetch(`https://api.jsonbin.io/v3/b/${APP_BIN_ID}`, {
+        method: 'PUT',
+        headers: { "X-Master-Key": MASTER_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ applications: apps })
+      });
+      return true;
+    } catch (e) {
+      showToast('保存失败: ' + e.message, true);
+      return false;
+    }
+  }
+
+  async function addUserManually() {
+    const qq = document.getElementById('addQQ').value.trim();
+    const pwd = document.getElementById('addPwd').value.trim();
+    const days = +document.getElementById('addDays').value;
+
+    if (!qq || !pwd) {
+      showToast('请填写QQ和密码', true);
+      return;
+    }
+    if (usersData.some(u => u.qq === qq)) {
+      showToast('该QQ已存在', true);
+      return;
+    }
+    showLoading('添加中...');
+
+    const now = Date.now();
+    let expireTs;
+    if (days === 0) {
+      expireTs = 8640000000000000;
+    } else {
+      expireTs = now + days * 86400000;
+    }
+
+    const newUser = {
+      qq: qq,
+      pwd: pwd,
+      status: 'active',
+      createTime: now,
+      expireTs: expireTs,
+      bindDevice: null,
+      operator: currentOperator,
+      activator: currentOperator
+    };
+
+    usersData.unshift(newUser);
+    const ok = await saveUsers(usersData);
+    if (ok) {
+      showToast('添加并激活成功');
+      document.getElementById('addQQ').value = '';
+      document.getElementById('addPwd').value = '';
+      await refreshData();
+    } else {
+      showToast('添加失败', true);
+    }
+    hideLoading();
+  }
+
+  async function approveApplication(app, days) {
+    showLoading('激活中...');
+    
+    const newUser = {
+      qq: app.qq,
+      pwd: app.pwd,
+      status: 'active',
+      createTime: Date.now(),
+      expireTs: days === 0 ? 8640000000000000 : Date.now() + days * 86400000,
+      bindDevice: app.deviceId || null,
+      operator: currentOperator,
+      activator: currentOperator
+    };
+    
+    usersData.unshift(newUser);
+    const ok1 = await saveUsers(usersData);
+    
+    applicationsData = applicationsData.filter(a => a.qq !== app.qq);
+    const ok2 = await saveApplications(applicationsData);
+    
+    hideLoading();
+    if (ok1 && ok2) {
+      showToast(`✅ 已激活 ${app.qq}`);
+      await refreshData();
+    } else {
+      showToast('激活失败', true);
+    }
+  }
+
+  async function deleteUser(qq) {
+    if (!confirm(`⚠️ 确定要永久删除用户 ${qq} 吗？\n此操作不可恢复！`)) return;
+    showLoading('删除中...');
+    usersData = usersData.filter(u => u.qq !== qq);
+    const ok = await saveUsers(usersData);
+    hideLoading();
+    if (ok) {
+      showToast(`🗑️ 已删除 ${qq}`);
+      await refreshData();
+    } else {
+      showToast('删除失败', true);
+    }
+  }
+
+  function updateExpiryStatus(user) {
+    if (user.status === 'disabled') return 'disabled';
+    if (user.status !== 'active') return user.status;
+    if (user.expireTs && Date.now() > user.expireTs) return 'expired';
+    return 'active';
+  }
+
+  // 统计时包含申请 Bin 里的未激活用户
+  function getStatsWithApplications() {
+    let total = usersData.length + applicationsData.length;
+    let pending = usersData.filter(u => u.status === 'pending').length + applicationsData.length;
+    let expired = usersData.filter(u => updateExpiryStatus(u) === 'expired').length;
+    let disabled = usersData.filter(u => u.status === 'disabled').length;
+    let unbound = usersData.filter(u => !u.bindDevice).length;
+    let active = usersData.filter(u => updateExpiryStatus(u) === 'active').length;
+    return { total, pending, active, expired, disabled, unbound };
+  }
+
+  function updateFilterCounts() {
+    const s = getStatsWithApplications();
+    document.getElementById('countAll').innerText = s.total;
+    document.getElementById('countPending').innerText = s.pending;
+    document.getElementById('countActive').innerText = s.active;
+    document.getElementById('countExpired').innerText = s.expired;
+    document.getElementById('countDisabled').innerText = s.disabled;
+    document.getElementById('countUnbound').innerText = s.unbound;
+  }
+
+  function getFilteredUsers() {
+    let list = [...usersData];
+    if (currentFilter === 'pending') list = list.filter(u => u.status === 'pending');
+    else if (currentFilter === 'active') list = list.filter(u => updateExpiryStatus(u) === 'active');
+    else if (currentFilter === 'expired') list = list.filter(u => updateExpiryStatus(u) === 'expired');
+    else if (currentFilter === 'disabled') list = list.filter(u => u.status === 'disabled');
+    else if (currentFilter === 'unbound') list = list.filter(u => !u.bindDevice);
+    if (searchKeyword) {
+      const kw = searchKeyword.trim();
+      list = list.filter(u => u.qq && u.qq.includes(kw));
+    }
+    return list;
+  }
+
+  function getOperatorIconByName(name) {
+    if (!name) return "👤";
+    if (name === "子画哥哥") return "✨";
+    if (name === "故奈") return "🌸";
+    return "👤";
+  }
+
+  function renderUserList() {
+    const container = document.getElementById('userListContainer');
+    
+    // 把申请 Bin 的数据转成"未激活"用户
+    let allUsers = [...usersData];
+    const pendingApps = applicationsData.map(app => ({
+      qq: app.qq,
+      pwd: app.pwd,
+      status: 'pending',
+      createTime: app.applyTime,
+      expireTs: null,
+      bindDevice: app.deviceId,
+      operator: '申请中',
+      activator: null,
+      isApplication: true
+    }));
+    allUsers = [...pendingApps, ...allUsers];
+    allUsers = sortUsersByNewest(allUsers);
+    
+    // 根据筛选条件过滤（未激活筛选要包含申请）
+    let filtered = [...allUsers];
+    if (currentFilter === 'pending') {
+      filtered = filtered.filter(u => u.status === 'pending' || u.isApplication);
+    } else if (currentFilter === 'active') {
+      filtered = filtered.filter(u => !u.isApplication && updateExpiryStatus(u) === 'active');
+    } else if (currentFilter === 'expired') {
+      filtered = filtered.filter(u => !u.isApplication && updateExpiryStatus(u) === 'expired');
+    } else if (currentFilter === 'disabled') {
+      filtered = filtered.filter(u => !u.isApplication && u.status === 'disabled');
+    } else if (currentFilter === 'unbound') {
+      filtered = filtered.filter(u => !u.isApplication && !u.bindDevice);
+    }
+    
+    if (searchKeyword) {
+      const kw = searchKeyword.trim();
+      filtered = filtered.filter(u => u.qq && u.qq.includes(kw));
+    }
+    
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-tip">✨ 无数据 ✨</div>';
+      return;
+    }
+    
+    let html = '';
+    filtered.forEach(u => {
+      // 显示状态：申请中的显示"未激活"
+      let st = u.isApplication ? 'pending' : updateExpiryStatus(u);
+      let stTxt = '', stCls = '';
+      if (st === 'pending') { stTxt = '未激活'; stCls = 'badge-pending'; }
+      else if (st === 'active') { stTxt = '已激活'; stCls = 'badge-active'; }
+      else if (st === 'expired') { stTxt = '已到期'; stCls = 'badge-expired'; }
+      else if (st === 'disabled') { stTxt = '已封禁'; stCls = 'badge-disabled'; }
+      
+      const regTime = u.createTime ? new Date(u.createTime).toLocaleString() : '未知';
+      let expTime = '未设置';
+      if (u.expireTs) {
+        if (u.expireTs === 8640000000000000) expTime = '永久';
+        else expTime = new Date(u.expireTs).toLocaleString();
+      }
+      const device = u.bindDevice ? (u.bindDevice.length > 16 ? u.bindDevice.slice(0,14)+'..' : u.bindDevice) : '未绑定';
+      const operatorRaw = u.isApplication ? '' : (u.activator || u.operator || '系统');
+      const operatorIcon = u.isApplication ? '' : getOperatorIconByName(operatorRaw);
+      
+      html += `
+      <div class="user-card collapsed" data-qq-card="${u.qq}">
+        <div class="user-card-inner">
+          <div class="user-head-row">
+            <div class="head-left">
+              <span class="user-qq">🐧 ${u.qq}</span>
+              <span class="badge ${stCls}">${stTxt}</span>
+              <span class="operator-name">${operatorIcon} ${operatorRaw}</span>
+            </div>
+            <button class="toggle-card-btn" data-toggle-qq="${u.qq}">▶</button>
+          </div>
+          <div class="action-area">
+            <div class="btn-row">
+              ${st === 'pending' ? `<button class="action-btn btn-green" data-action="approve" data-qq="${u.qq}">✅ 激活</button>` : ''}
+              ${st === 'disabled' ? `<button class="action-btn btn-green" data-action="enable" data-qq="${u.qq}">♻️ 解封</button>` : ''}
+              ${st === 'active' ? `<button class="action-btn btn-red" data-action="disable" data-qq="${u.qq}">🈲 封禁</button>` : ''}
+              <button class="action-btn btn-yellow" data-action="unbind" data-qq="${u.qq}">📵 解绑</button>
+            </div>
+            <div class="btn-row">
+              <select class="expire-select" data-qq="${u.qq}">
+                <option value="1">1天</option>
+                <option value="7">7天</option>
+                <option value="30">30天</option>
+                <option value="0">永久</option>
+              </select>
+              <button class="action-btn btn-blue" data-action="extend" data-qq="${u.qq}">⏱️ 延期</button>
+            </div>
+            <button class="delete-btn" data-action="deleteUser" data-qq="${u.qq}">🗑️ 永久删除用户</button>
+          </div>
+          <div class="info-row-wrap">
+            <div class="info-item">📅 注册<br>${regTime}</div>
+            <div class="info-item">⏰ 到期<br>${expTime}</div>
+            <div class="info-item">📱 设备ID<br>${device}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    container.innerHTML = html;
+    bindActions();
+    bindToggleEvents();
+  }
+
+  function bindToggleEvents() {
+    document.querySelectorAll('.toggle-card-btn').forEach(btn => {
+      btn.removeEventListener('click', handleToggleClick);
+      btn.addEventListener('click', handleToggleClick);
+    });
+  }
+
+  function handleToggleClick(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const qq = btn.dataset.toggleQq;
+    const card = document.querySelector(`.user-card[data-qq-card="${qq}"]`);
+    if (!card) return;
+    const isCollapsed = card.classList.contains('collapsed');
+    if (isCollapsed) {
+      card.classList.remove('collapsed');
+      btn.innerHTML = '▼';
+    } else {
+      card.classList.add('collapsed');
+      btn.innerHTML = '▶';
+    }
+  }
+
+  function bindActions() {
+    const container = document.getElementById('userListContainer');
+    if (!container) return;
+    container.removeEventListener('click', actionHandler);
+    container.addEventListener('click', actionHandler);
+  }
+
+  async function actionHandler(e) {
+    const target = e.target;
+    const actionBtn = target.closest('[data-action]');
+    if (!actionBtn) return;
+    const act = actionBtn.dataset.action;
+    const qq = actionBtn.dataset.qq;
+    
+    if (act === 'deleteUser') {
+      await deleteUser(qq);
+      return;
+    }
+    
+    if (act === 'approve') {
+      const app = applicationsData.find(a => a.qq === qq);
+      if (app) {
+        const card = document.querySelector(`.user-card[data-qq-card="${qq}"]`);
+        const select = card ? card.querySelector('.expire-select') : null;
+        const days = select ? parseInt(select.value) : 7;
+        await approveApplication(app, days);
+      }
+      return;
+    }
+    
+    const user = usersData.find(x => x.qq === qq);
+    if (!user) return;
+    const card = document.querySelector(`.user-card[data-qq-card="${qq}"]`);
+    const select = card ? card.querySelector('.expire-select') : null;
+    const days = select ? +select.value : 7;
+
+    if (act === 'unbind') {
+      showLoading('解绑中...');
+      user.bindDevice = null;
+      const ok = await saveUsers(usersData);
+      hideLoading();
+      if (ok) {
+        showToast('已解绑');
+        await refreshData();
+      } else showToast('解绑失败', true);
+    }
+    else if (act === 'extend') {
+      showLoading('延长中...');
+      let base = (user.expireTs && user.expireTs > Date.now()) ? user.expireTs : Date.now();
+      if (days === 0) {
+        user.expireTs = 8640000000000000;
+      } else {
+        user.expireTs = base + days * 86400000;
+      }
+      const ok = await saveUsers(usersData);
+      hideLoading();
+      if (ok) {
+        showToast('延长成功');
+        await refreshData();
+      } else showToast('延长失败', true);
+    }
+    else if (act === 'disable') {
+      showLoading('封禁中...');
+      user.status = 'disabled';
+      const ok = await saveUsers(usersData);
+      hideLoading();
+      if (ok) {
+        showToast('已封禁');
+        await refreshData();
+      } else showToast('封禁失败', true);
+    }
+    else if (act === 'enable') {
+      showLoading('解封中...');
+      user.status = 'active';
+      const ok = await saveUsers(usersData);
+      hideLoading();
+      if (ok) {
+        showToast('已解封');
+        await refreshData();
+      } else showToast('解封失败', true);
+    }
+  }
+
+  async function refreshData() {
+    showLoading('刷新中...');
+    const st = document.getElementById('cloudStatus');
+    st.textContent = '刷新中...';
+    
+    usersData = await fetchUsers();
+    applicationsData = await fetchApplications();
+    
+    updateFilterCounts();
+    renderUserList();
+    
+    st.textContent = '✅ 已连接';
+    st.className = 'status-badge connected';
+    hideLoading();
+  }
+
+  async function autoConnect() {
+    showConnectTip();
+    const st = document.getElementById('cloudStatus');
+    st.textContent = '连接中...';
+    
+    usersData = await fetchUsers();
+    applicationsData = await fetchApplications();
+    
+    updateFilterCounts();
+    renderUserList();
+    
+    st.textContent = '✅ 已连接';
+    st.className = 'status-badge connected';
+    hideConnectTip();
+  }
+
+  function initLogin() {
+    const btns = document.querySelectorAll('.admin-login-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const adminName = btn.dataset.admin;
+        if (!adminName) return;
+        currentOperator = adminName;
+        if (adminName === "子画哥哥") currentOperatorIcon = "✨";
+        else if (adminName === "故奈") currentOperatorIcon = "🌸";
+        else currentOperatorIcon = "👤";
+        document.getElementById('operatorDisplay').innerHTML = `${currentOperatorIcon} ${currentOperator}`;
+        document.getElementById('adminLoginOverlay').classList.add('hidden');
+        document.getElementById('adminMain').classList.remove('hidden');
+        autoConnect();
+      });
+    });
+  }
+
+  function bindFilters() {
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.onclick = () => {
+        currentFilter = b.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        renderUserList();
+      };
+    });
+  }
+
+  function initAddUser() {
+    document.getElementById('addUserBtn').addEventListener('click', addUserManually);
+  }
+
+  function initSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+
+    function doSearch() {
+      searchKeyword = searchInput.value.trim();
+      renderUserList();
+      if (searchKeyword) showToast(`搜索：${searchKeyword}`);
+    }
+
+    searchBtn.onclick = doSearch;
+    searchInput.onkeyup = (e) => { if (e.key === 'Enter') doSearch(); };
+  }
+
+  document.getElementById('refreshBtn').onclick = refreshData;
+  initLogin();
+  bindFilters();
+  initAddUser();
+  initSearch();
+</script>
+</body>
+</html>
